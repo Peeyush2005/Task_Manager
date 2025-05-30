@@ -21,7 +21,7 @@ class Task:
     
     def _generate_id(self) -> str:
         """Generate a unique task ID"""
-        return str(int(datetime.now().timestamp() * 1000000))
+        return str(int(datetime.now().timestamp() * 1_000_000))
     
     def mark_complete(self):
         """Mark task as completed"""
@@ -33,10 +33,10 @@ class Task:
         self.completed = False
         self.completed_at = None
     
-    def update(self, title: str = None, description: str = None, priority: str = None):
+    def update(self, title: Optional[str] = None, description: Optional[str] = None, priority: Optional[str] = None):
         """Update task details"""
-        if title:
-            self.title = title
+        if title is not None and title.strip():
+            self.title = title.strip()
         if description is not None:
             self.description = description
         if priority:
@@ -59,17 +59,18 @@ class Task:
     @classmethod
     def from_dict(cls, data: Dict):
         """Create task from dictionary"""
-        task = cls(data["title"], data["description"], data["priority"])
+        task = cls(data["title"], data.get("description", ""), data.get("priority", "medium"))
         task.id = data["id"]
-        task.completed = data["completed"]
-        task.created_at = data["created_at"]
+        task.completed = data.get("completed", False)
+        task.created_at = data.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         task.completed_at = data.get("completed_at")
         return task
     
     def __str__(self) -> str:
         status = "✓" if self.completed else "○"
-        priority_symbol = {"low": "↓", "medium": "→", "high": "↑"}[self.priority]
+        priority_symbol = {"low": "↓", "medium": "→", "high": "↑"}.get(self.priority, "→")
         return f"[{status}] {priority_symbol} {self.title}"
+
 
 class TaskManager:
     """Main task management class"""
@@ -143,7 +144,8 @@ class TaskManager:
         
         priority_counts = {"low": 0, "medium": 0, "high": 0}
         for task in self.tasks:
-            priority_counts[task.priority] += 1
+            if task.priority in priority_counts:
+                priority_counts[task.priority] += 1
         
         return {
             "total": total,
