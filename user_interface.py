@@ -33,6 +33,7 @@ class UserInterface:
         print("13. View Statistics")
         print("14. Search Tasks")
         print("15. Export Tasks to File")
+        print("16. Remove All Tasks")
         print("0. Exit")
         print("=" * 40)
     
@@ -66,7 +67,7 @@ class UserInterface:
         for category in sorted(categories.keys()):
             print(f"\n📁 {category}:")
             category_tasks = sorted(categories[category], 
-                                  key=lambda t: (t.completed, priority_order[t.priority]))
+                                  key=lambda t: (t.completed, priority_order.get(t.priority, 3)))
             
             for i, task in enumerate(category_tasks, 1):
                 print(f"   {i}. {task}")
@@ -350,6 +351,85 @@ class UserInterface:
         else:
             print("\nTask deletion cancelled.")
     
+    def export_tasks_to_file(self):
+        """Export all tasks to a text file"""
+        tasks = self.task_manager.get_all_tasks()
+        if not tasks:
+            print("\nNo tasks to export!")
+            return
+        
+        filename = self.get_user_input("Enter filename (without extension)")
+        if not filename:
+            print("Filename cannot be empty!")
+            return
+        
+        filepath = f"{filename}.txt"
+        
+        try:
+            with open(filepath, 'w', encoding='utf-8') as file:
+                file.write("TASK MANAGER EXPORT\n")
+                file.write("=" * 50 + "\n\n")
+                
+                # Write statistics
+                stats = self.task_manager.get_stats()
+                file.write(f"Export Date: {stats.get('export_date', 'N/A')}\n")
+                file.write(f"Total Tasks: {stats['total']}\n")
+                file.write(f"Completed: {stats['completed']}\n")
+                file.write(f"Pending: {stats['pending']}\n")
+                file.write(f"Completion Rate: {stats['completion_rate']:.1f}%\n\n")
+                file.write("=" * 50 + "\n\n")
+                
+                # Write tasks grouped by category
+                categories = {}
+                for task in tasks:
+                    if task.category not in categories:
+                        categories[task.category] = []
+                    categories[task.category].append(task)
+                
+                for category in sorted(categories.keys()):
+                    file.write(f"CATEGORY: {category.upper()}\n")
+                    file.write("-" * 30 + "\n")
+                    
+                    for task in categories[category]:
+                        file.write(f"Title: {task.title}\n")
+                        if task.description:
+                            file.write(f"Description: {task.description}\n")
+                        file.write(f"Priority: {task.priority}\n")
+                        file.write(f"Tags: {', '.join(task.tags) if task.tags else 'None'}\n")
+                        file.write(f"Status: {'✓ Completed' if task.completed else '○ Pending'}\n")
+                        file.write(f"Created: {task.created_at}\n")
+                        if task.completed_at:
+                            file.write(f"Completed: {task.completed_at}\n")
+                        file.write("\n" + "-" * 25 + "\n\n")
+                    
+                file.write("=" * 50 + "\n")
+                file.write("End of Export\n")
+            
+            print(f"\nTasks successfully exported to '{filepath}'!")
+        except Exception as e:
+            print(f"\nError exporting tasks: {e}")
+    
+    def remove_all_tasks(self):
+        """Remove all tasks after user confirmation"""
+        tasks = self.task_manager.get_all_tasks()
+        if not tasks:
+            print("\nNo tasks to remove!")
+            return
+        
+        print(f"\nThis will permanently delete all {len(tasks)} tasks!")
+        confirm = self.get_user_input("Are you sure you want to delete ALL tasks? This action cannot be undone! (y/N)")
+        
+        if confirm.lower() == 'y':
+            # Ask for double confirmation
+            double_confirm = self.get_user_input("Type 'DELETE ALL' to confirm")
+            if double_confirm == 'DELETE ALL':
+                self.task_manager.delete_all_tasks()
+                print("\n✓ All tasks have been deleted.")
+            else:
+                print("\nOperation cancelled - confirmation text didn't match.")
+        else:
+            print("\nOperation cancelled.")
+    
     def select_task_by_number(self, tasks: List[Task]) -> str:
         """Select a task by its display number"""
         try:
@@ -431,43 +511,6 @@ class UserInterface:
         
         else:
             print("Invalid search option!")
-            
-            
-    def export_tasks_to_file(self):
-    """Export all tasks to a text file"""
-    tasks = self.task_manager.get_all_tasks()
-    if not tasks:
-        print("\nNo tasks to export!")
-        return
-    
-    filename = self.get_user_input("Enter filename (without extension)")
-    if not filename:
-        print("Filename cannot be empty!")
-        return
-    
-    filepath = f"{filename}.txt"
-    
-    try:
-        with open(filepath, 'w', encoding='utf-8') as file:
-            file.write("TASK MANAGER EXPORT\n")
-            file.write("=" * 50 + "\n")
-            for task in tasks:
-                file.write(f"Title: {task.title}\n")
-                if task.description:
-                    file.write(f"Description: {task.description}\n")
-                file.write(f"Priority: {task.priority}\n")
-                file.write(f"Category: {task.category}\n")
-                file.write(f"Tags: {', '.join(task.tags) if task.tags else 'None'}\n")
-                file.write(f"Status: {'Completed' if task.completed else 'Pending'}\n")
-                file.write(f"Created At: {task.created_at}\n")
-                if task.completed_at:
-                    file.write(f"Completed At: {task.completed_at}\n")
-                file.write("-" * 50 + "\n")
-        
-        print(f"\nTasks successfully exported to '{filepath}'!")
-    except Exception as e:
-        print(f"\nError exporting tasks: {e}")
-
     
     def run(self):
         """Main application loop"""
@@ -505,6 +548,8 @@ class UserInterface:
                 self.search_tasks()
             elif choice == "15":
                 self.export_tasks_to_file()
+            elif choice == "16":
+                self.remove_all_tasks()
             elif choice == "0":
                 self.running = False
                 print("\nThank you for using Task Manager v2.0!")
@@ -513,4 +558,3 @@ class UserInterface:
             
             if self.running:
                 input("\nPress Enter to continue...")
-
