@@ -1,3 +1,8 @@
+import json
+from your_task_module import TaskManager  # adjust import based on your file
+
+# Example JSON string (your data)
+json_data = '''
 [
   {
     "id": "1748539177427114",
@@ -36,3 +41,12 @@
     "completed_at": null
   }
 ]
+'''
+
+task_list = json.loads(json_data)
+
+task_manager = TaskManager()
+task_manager.tasks = [Task.from_dict(task) for task in task_list]
+
+for task in task_manager.tasks:
+    print(task)

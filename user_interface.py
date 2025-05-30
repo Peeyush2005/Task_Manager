@@ -66,7 +66,7 @@ class UserInterface:
         for category in sorted(categories.keys()):
             print(f"\n📁 {category}:")
             category_tasks = sorted(categories[category], 
-                                  key=lambda t: (t.completed, priority_order[t.priority]))
+                                  key=lambda t: (t.completed, priority_order.get(t.priority, 3)))
             
             for i, task in enumerate(category_tasks, 1):
                 print(f"   {i}. {task}")
@@ -350,6 +350,15 @@ class UserInterface:
         else:
             print("\nTask deletion cancelled.")
     
+    def remove_all_tasks(self):
+        """Remove all tasks after user confirmation"""
+        confirm = self.get_user_input("Are you sure you want to delete ALL tasks? This action cannot be undone! (y/N)")
+        if confirm.lower() == 'y':
+            self.task_manager.delete_all_tasks()
+            print("\nAll tasks have been deleted.")
+        else:
+            print("\nOperation cancelled.")
+    
     def select_task_by_number(self, tasks: List[Task]) -> str:
         """Select a task by its display number"""
         try:
@@ -466,9 +475,8 @@ class UserInterface:
                 self.view_statistics()
             elif choice == "14":
                 self.search_tasks()
-                elif choice == "15": #Added a new feature called remove all tasks By Aditthya
+            elif choice == "15":  # Added a new feature called remove all tasks By Aditthya
                 self.remove_all_tasks()
-
             elif choice == "0":
                 self.running = False
                 print("\nThank you for using Task Manager v2.0!")
@@ -477,13 +485,3 @@ class UserInterface:
             
             if self.running:
                 input("\nPress Enter to continue...")
-                def remove_all_tasks(self):
-    """Remove all tasks after user confirmation"""
-    confirm = self.get_user_input("Are you sure you want to delete ALL tasks? This action cannot be undone! (y/N)")
-    if confirm.lower() == 'y':
-        self.task_manager.delete_all_tasks()
-        print("\nAll tasks have been deleted.")
-    else:
-        print("\nOperation cancelled.")
-
-
