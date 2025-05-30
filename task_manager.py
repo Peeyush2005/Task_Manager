@@ -83,7 +83,13 @@ class TaskManager:
         """Add a new task"""
         if not title.strip():
             raise ValueError("Task title cannot be empty")
-        
+   task = {
+    "title": input("Title: "),
+    "status": "pending",
+    "due_date": input("Due date (YYYY-MM-DD): "),
+    "recurrence": input("Recurrence (none/daily/weekly/monthly): ").lower()
+}
+     
         task = Task(title.strip(), description.strip(), priority)
         self.tasks.append(task)
         return task
