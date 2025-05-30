@@ -8,10 +8,11 @@ def main():
     print("    🏷️  Now with Categories!")
     print("=" * 50)
     print()
-    
+
     task_manager = TaskManager()
     ui = UserInterface(task_manager)
-    
+
+    # Load tasks and categories if they exist, otherwise create default categories
     try:
         task_manager.load_tasks()
         print(f"Loaded {len(task_manager.tasks)} existing tasks.")
@@ -24,9 +25,10 @@ def main():
         print("Created default categories: Work, Personal, Shopping, Health")
     except Exception as e:
         print(f"Error loading tasks: {e}")
-    
+
     print()
-    
+
+    # Run the user interface loop
     try:
         ui.run()
     except KeyboardInterrupt:
@@ -35,6 +37,7 @@ def main():
         print(f"\nAn error occurred: {e}")
         sys.exit(1)
     finally:
+        # Attempt to save tasks on exit
         try:
             task_manager.save_tasks()
             print("Tasks saved successfully!")
