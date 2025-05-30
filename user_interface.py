@@ -32,6 +32,7 @@ class UserInterface:
         print("12. Manage Tags")
         print("13. View Statistics")
         print("14. Search Tasks")
+        print("15. Export Tasks to File")
         print("0. Exit")
         print("=" * 40)
     
@@ -430,6 +431,43 @@ class UserInterface:
         
         else:
             print("Invalid search option!")
+            
+            
+    def export_tasks_to_file(self):
+    """Export all tasks to a text file"""
+    tasks = self.task_manager.get_all_tasks()
+    if not tasks:
+        print("\nNo tasks to export!")
+        return
+    
+    filename = self.get_user_input("Enter filename (without extension)")
+    if not filename:
+        print("Filename cannot be empty!")
+        return
+    
+    filepath = f"{filename}.txt"
+    
+    try:
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write("TASK MANAGER EXPORT\n")
+            file.write("=" * 50 + "\n")
+            for task in tasks:
+                file.write(f"Title: {task.title}\n")
+                if task.description:
+                    file.write(f"Description: {task.description}\n")
+                file.write(f"Priority: {task.priority}\n")
+                file.write(f"Category: {task.category}\n")
+                file.write(f"Tags: {', '.join(task.tags) if task.tags else 'None'}\n")
+                file.write(f"Status: {'Completed' if task.completed else 'Pending'}\n")
+                file.write(f"Created At: {task.created_at}\n")
+                if task.completed_at:
+                    file.write(f"Completed At: {task.completed_at}\n")
+                file.write("-" * 50 + "\n")
+        
+        print(f"\nTasks successfully exported to '{filepath}'!")
+    except Exception as e:
+        print(f"\nError exporting tasks: {e}")
+
     
     def run(self):
         """Main application loop"""
@@ -465,6 +503,8 @@ class UserInterface:
                 self.view_statistics()
             elif choice == "14":
                 self.search_tasks()
+            elif choice == "15":
+                self.export_tasks_to_file()
             elif choice == "0":
                 self.running = False
                 print("\nThank you for using Task Manager v2.0!")
